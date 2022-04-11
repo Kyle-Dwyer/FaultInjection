@@ -1,0 +1,191 @@
+kind: Schedule
+apiVersion: chaos-mesh.org/v1alpha1
+metadata:
+  namespace: ts
+  name: route-network-delay
+spec:
+  schedule: 0 2 * * *
+  startingDeadlineSeconds: 60
+  concurrencyPolicy: Forbid
+  historyLimit: 1
+  type: NetworkChaos
+  networkChaos:
+    selector:
+      namespaces:
+        - ts
+      labelSelectors:
+        app: ts-route-service
+    mode: one
+    action: delay
+    duration: 1h
+    delay:
+      latency: 5s
+    direction: to
+
+---
+kind: Schedule
+apiVersion: chaos-mesh.org/v1alpha1
+metadata:
+  namespace: ts
+  name: config-stress-cpu
+spec:
+  schedule: 0 9 * * *
+  startingDeadlineSeconds: null
+  concurrencyPolicy: Forbid
+  historyLimit: 1
+  type: StressChaos
+  stressChaos:
+    selector:
+      namespaces:
+        - ts
+      labelSelectors:
+        app: ts-config-service
+    mode: one
+    stressors:
+      cpu:
+        workers: 4
+        load: 100
+    duration: 1h
+
+---
+kind: Schedule
+apiVersion: chaos-mesh.org/v1alpha1
+metadata:
+  namespace: ts
+  name: travel-http-abort
+spec:
+  schedule: 0 0 * * *
+  startingDeadlineSeconds: 60
+  concurrencyPolicy: Forbid
+  historyLimit: 1
+  type: HTTPChaos
+  httpChaos:
+    selector:
+      namespaces:
+        - ts
+      labelSelectors:
+        app: ts-travel-service
+    mode: one
+    target: Request
+    abort: true
+    port: 16114
+    path: "*"
+    duration: 1h
+
+---
+kind: Schedule
+apiVersion: chaos-mesh.org/v1alpha1
+metadata:
+  namespace: ts
+  name: ticketinfo-http-delay
+spec:
+  schedule: 0 1 * * *
+  startingDeadlineSeconds: 60
+  concurrencyPolicy: Forbid
+  historyLimit: 1
+  type: HTTPChaos
+  httpChaos:
+    selector:
+      namespaces:
+        - ts
+      labelSelectors:
+        app: ts-ticketinfo-service
+    mode: one
+    target: Request
+    delay: 5s
+    port: 15681
+    path: "*"
+    duration: 1h
+
+---
+kind: Schedule
+apiVersion: chaos-mesh.org/v1alpha1
+metadata:
+  namespace: ts
+  name: basic-network-partition
+spec:
+  schedule: 0 4 * * *
+  startingDeadlineSeconds: 60
+  concurrencyPolicy: Forbid
+  historyLimit: 1
+  type: NetworkChaos
+  networkChaos:
+    selector:
+      namespaces:
+        - ts
+      labelSelectors:
+        app: ts-basic-service
+    mode: one
+    action: partition
+    duration: 1h
+    direction: to
+
+---
+kind: Schedule
+apiVersion: chaos-mesh.org/v1alpha1
+metadata:
+  namespace: ts
+  name: travelplan-pod-kill-0
+spec:
+  schedule: 0 6 * * *
+  startingDeadlineSeconds: 60
+  concurrencyPolicy: Forbid
+  historyLimit: 1
+  type: PodChaos
+  podChaos:
+    selector:
+      namespaces:
+        - ts
+      labelSelectors:
+        app: ts-travel-plan-service
+    mode: one
+    action: pod-kill
+    gracePeriod: 0
+
+---
+kind: Schedule
+apiVersion: chaos-mesh.org/v1alpha1
+metadata:
+  namespace: ts
+  name: inside-pod-failure
+spec:
+  schedule: 0 10 * * *
+  startingDeadlineSeconds: 60
+  concurrencyPolicy: Forbid
+  historyLimit: 1
+  type: PodChaos
+  podChaos:
+    selector:
+      namespaces:
+        - ts
+      labelSelectors:
+        app: ts-inside-payment-service
+    mode: one
+    action: pod-failure
+    duration: 1h
+    gracePeriod: 0
+
+---
+kind: Schedule
+apiVersion: chaos-mesh.org/v1alpha1
+metadata:
+  namespace: ts
+  name: contacts-stress-mem
+spec:
+  schedule: 0 12 * * *
+  startingDeadlineSeconds: 60
+  concurrencyPolicy: Forbid
+  historyLimit: 1
+  type: StressChaos
+  stressChaos:
+    selector:
+      namespaces:
+        - ts
+      labelSelectors:
+        app: ts-contacts-service
+    mode: one
+    stressors:
+      memory:
+        workers: 1
+        size: 500MB
+    duration: 1h

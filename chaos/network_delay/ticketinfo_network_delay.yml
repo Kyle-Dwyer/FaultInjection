@@ -1,0 +1,17 @@
+kind: NetworkChaos
+apiVersion: chaos-mesh.org/v1alpha1
+metadata:
+  namespace: ts
+  name: ticketinfo-network-delay
+spec:
+  selector:
+    namespaces:
+      - ts
+    labelSelectors:
+      app: ts-ticketinfo-service
+  mode: one
+  action: delay
+  duration: 5m
+  delay:
+    latency: 5s
+  direction: both
