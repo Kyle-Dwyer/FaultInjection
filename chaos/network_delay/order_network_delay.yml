@@ -14,4 +14,3 @@ spec:
   duration: 5m
   delay:
     latency: 5s
-  direction: both

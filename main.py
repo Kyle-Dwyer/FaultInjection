@@ -17,6 +17,7 @@ def apply_from_single_file(yaml_file):
 def delete_by_kind_and_name(name):
     config.load_kube_config()
     k8s_core_v1 = client.CoreV1Api()
+    resp = k8s_core_v1.delete_namespaced_pod()
     resp = k8s_core_v1.delete_namespaced_pod(namespace="ts", name=name)
     print("delete Pod ", name)
 
@@ -49,6 +50,6 @@ pods_map = {'basic-network-delay': './chaos/network_delay/basic_network_delay.ym
             'user-http-outbound': './chaos/http_outbound/user_network_delay.yml'}
 
 if __name__ == '__main__':
-    apply_from_single_file("./chaos/test.yml")
+    apply_from_single_file(pods_map['basic-network-delay'])
     time.sleep(60)
-    delete_by_kind_and_name("game-demo")
+    delete_by_kind_and_name("basic-network-delay")
