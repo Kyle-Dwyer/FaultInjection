@@ -1,26 +1,5 @@
+import os
 import time
-
-from kubernetes import client, config, utils
-
-
-# kubectl apply -f yaml_file.yaml
-def apply_from_single_file(yaml_file):
-    config.load_kube_config()
-    k8s_client = client.ApiClient()
-    # yaml_file = 'examples/configmap-demo-pod.yml'
-    utils.create_from_yaml(k8s_client, yaml_file, verbose=True)
-    print("Create Pod ")
-
-
-# kubectl delete networkchaos network-delay
-# kubectl delete -n ts name
-def delete_by_kind_and_name(name):
-    config.load_kube_config()
-    k8s_core_v1 = client.CoreV1Api()
-    resp = k8s_core_v1.delete_namespaced_pod()
-    resp = k8s_core_v1.delete_namespaced_pod(namespace="ts", name=name)
-    print("delete Pod ", name)
-
 
 pods_map = {'basic-network-delay': './chaos/network_delay/basic_network_delay.yml',
             'order-network-delay': './chaos/network_delay/order_network_delay.yml',
@@ -49,7 +28,18 @@ pods_map = {'basic-network-delay': './chaos/network_delay/basic_network_delay.ym
             'travel-plan-http-outbound': './chaos/http_outbound/travel_plan_network_delay.yml',
             'user-http-outbound': './chaos/http_outbound/user_network_delay.yml'}
 
+
+def apply(file_path):
+    command = "kubectl apply -f " + file_path
+    os.system(command)
+
+
+def delete(file_path):
+    command = "kubectl delete -f " + file_path
+    os.system(command)
+
+
 if __name__ == '__main__':
-    apply_from_single_file(pods_map['basic-network-delay'])
+    apply(pods_map["basic-network-delay"])
     time.sleep(60)
-    delete_by_kind_and_name("basic-network-delay")
+    delete(pods_map["basic-network-delay"])
