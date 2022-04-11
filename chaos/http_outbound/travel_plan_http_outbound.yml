@@ -1,4 +1,4 @@
-kind: httpChaos
+kind: HTTPChaos
 apiVersion: chaos-mesh.org/v1alpha1
 metadata:
   namespace: ts

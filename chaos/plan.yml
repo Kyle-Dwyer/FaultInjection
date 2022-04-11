@@ -59,7 +59,7 @@ spec:
   concurrencyPolicy: Forbid
   historyLimit: 1
   type: HTTPChaos
-  httpChaos:
+  HTTPChaos:
     selector:
       namespaces:
         - ts
@@ -84,7 +84,7 @@ spec:
   concurrencyPolicy: Forbid
   historyLimit: 1
   type: HTTPChaos
-  httpChaos:
+  HTTPChaos:
     selector:
       namespaces:
         - ts
