@@ -48,6 +48,6 @@ pods_map = {'basic-network-delay': './chaos/network_delay/basic_network_delay.ym
             'user-http-outbound': './chaos/http_outbound/user_network_delay.yml'}
 
 if __name__ == '__main__':
-    apply_from_single_file()
+    apply_from_single_file("./chaos/test.yml")
     time.sleep(60)
-    delete_by_kind_and_name()
+    delete_by_kind_and_name("nginx-test")
