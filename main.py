@@ -9,6 +9,7 @@ def apply_from_single_file(yaml_file):
     k8s_client = client.ApiClient()
     # yaml_file = 'examples/configmap-demo-pod.yml'
     utils.create_from_yaml(k8s_client, yaml_file, verbose=True)
+    print("Create Pod ")
 
 
 # kubectl delete networkchaos network-delay
@@ -50,4 +51,4 @@ pods_map = {'basic-network-delay': './chaos/network_delay/basic_network_delay.ym
 if __name__ == '__main__':
     apply_from_single_file("./chaos/test.yml")
     time.sleep(60)
-    delete_by_kind_and_name("nginx-test")
+    delete_by_kind_and_name("game-demo")
