@@ -1,0 +1,3 @@
+[submodule "query/autoquery"]
+	path = query/autoquery
+	url = https://github.com/FudanSELab/train-ticket-auto-query/tree/update
