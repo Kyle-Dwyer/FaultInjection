@@ -406,7 +406,7 @@ def workflow(times: int = 50, task_timeout: int = 5 * minute):
             logger.info("no task, waiting for 1 minute")
             time.sleep(1 * minute)
             continue
-        fault_split = fault.split("_")
+        fault_split = fault.split("-")
         # 选择task
         target = fault_split[0]
         if fault_split[0] == "travel" and fault_split[1] == "plan":
