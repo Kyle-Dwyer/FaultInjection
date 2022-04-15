@@ -1,12 +1,12 @@
 kind: HTTPChaos
 apiVersion: chaos-mesh.org/v1alpha1
 metadata:
-  namespace: ts
+  namespace: chaos-testing
   name: station-http-outbound
 spec:
   selector:
     namespaces:
-      - ts
+      - train-ticket
     labelSelectors:
       app: ts-station-service
   mode: one

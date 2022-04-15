@@ -1,12 +1,12 @@
 kind: NetworkChaos
 apiVersion: chaos-mesh.org/v1alpha1
 metadata:
-  namespace: ts
+  namespace: chaos-testing
   name: basic-network-delay
 spec:
   selector:
     namespaces:
-      - ts
+      - train-ticket
     labelSelectors:
       app: ts-basic-service
   mode: one
