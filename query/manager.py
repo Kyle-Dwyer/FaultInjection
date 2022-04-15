@@ -182,8 +182,7 @@ def query_travel(timeout: int = 5 * minute):
     def task():
         random_query(q, query_weights)
 
-    run(task, timeout)
-    return
+    return run(task, timeout)
 
 
 def query_ticketinfo(timeout: int = 5 * minute):
@@ -204,8 +203,7 @@ def query_ticketinfo(timeout: int = 5 * minute):
     def task():
         random_query(q, query_weights)
 
-    run(task, timeout)
-    return
+    return run(task, timeout)
 
 
 def query_route(timeout: int = 5 * minute):
@@ -225,8 +223,7 @@ def query_route(timeout: int = 5 * minute):
     def task():
         random_query(q, query_weights)
 
-    run(task, timeout)
-    return
+    return run(task, timeout)
 
 
 def query_order(timeout: int = 5 * minute):
@@ -255,8 +252,7 @@ def query_order(timeout: int = 5 * minute):
     def task():
         random_query(q, query_weights)
 
-    run(task, timeout)
-    return
+    return run(task, timeout)
 
 
 def query_basic(timeout: int = 5 * minute):
@@ -272,8 +268,7 @@ def query_basic(timeout: int = 5 * minute):
     def task():
         random_query(q, query_weights)
 
-    run(task, timeout)
-    return
+    return run(task, timeout)
 
 
 def query_travel_plan(timeout: int = 5 * minute):
@@ -288,8 +283,7 @@ def query_travel_plan(timeout: int = 5 * minute):
     def task():
         random_query(q, query_weights)
 
-    run(task, timeout)
-    return
+    return run(task, timeout)
 
 
 def query_station(timeout: int = 5 * minute):
@@ -308,8 +302,7 @@ def query_station(timeout: int = 5 * minute):
     def task():
         random_query(q, query_weights)
 
-    run(task, timeout)
-    return
+    return run(task, timeout)
 
 
 def query_user(timeout: int = 5 * minute):
@@ -325,8 +318,7 @@ def query_user(timeout: int = 5 * minute):
     def task():
         random_query(q, query_weights)
 
-    run(task, timeout)
-    return
+    return run(task, timeout)
 
 
 chaos_path = {'basic-network-delay': '../chaos/network_delay/basic_network_delay.yml',
