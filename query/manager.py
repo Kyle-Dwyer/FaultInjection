@@ -24,7 +24,8 @@ hour = 60 * minute
 fun_dic = {}
 
 
-def constant_query(targets: list, timeout: int = 24 * hour):
+def constant_query(targets: list, timeout: int = 5 * minute):
+    start = time.time()
     q = Query(url)
 
     def preserve_scenario():
@@ -95,7 +96,7 @@ def constant_query(targets: list, timeout: int = 24 * hour):
                   q.query_cheapest,
                   q.query_quickest],
         "user": [cancel_scenario],
-        "travel_plan": [q.query_min_station,
+        "travel-plan": [q.query_min_station,
                         q.query_cheapest,
                         q.query_quickest],
         "station": [q.query_high_speed_ticket,
@@ -113,6 +114,8 @@ def constant_query(targets: list, timeout: int = 24 * hour):
                 del query_weights[fun]
 
     for _ in range(0, count):
+        if time.time() - start > timeout:
+            return
         func = random_from_weighted(query_weights)
         logger.info(f'constant execute query: {func.__name__}')
         try:
@@ -126,7 +129,7 @@ def constant_query(targets: list, timeout: int = 24 * hour):
 
 
 # 随机次数随机场景进行查询
-def random_query(q: Query, weights: dict, count: int = random.randint(3, 5), interval: int = random.randint(10, 20)):
+def random_query(q: Query, weights: dict, interval: int = random.randint(10, 20)):
     """
     登陆一个用户并按权重随机发起请求
     :param weights: 权重dict
@@ -136,28 +139,29 @@ def random_query(q: Query, weights: dict, count: int = random.randint(3, 5), int
     if not q.login():
         return
 
-    for _ in range(0, count):
-        func = random_from_weighted(weights)
-        logger.info(f'execute query: {func.__name__}')
-        try:
-            execute_time = time.strftime("%Y-%m-%d %H:%M:%S")
-            func()
-            fun_dic[execute_time] = func.__name__
-        except Exception:
-            logger.exception(f'query {func.__name__} got an exception')
-
-        time.sleep(interval)
+    func = random_from_weighted(weights)
+    logger.info(f'execute query: {func.__name__}')
+    try:
+        execute_time = time.strftime("%Y-%m-%d %H:%M:%S")
+        func()
+        fun_dic[execute_time] = func.__name__
+    except Exception:
+        logger.exception(f'query {func.__name__} got an exception')
+    time.sleep(interval)
 
     return
 
 
 def run(task: Callable, timeout: int):
-    task()
-    # start = time.time()
-    # while time.time() - start < timeout:
-    #     task()
-    #     time.sleep(1)
-    return
+    start = time.time()
+    end = start
+    count = random.randint(3, 5)
+    for _ in range(0, count):
+        if time.time() - start > timeout:
+            break
+        task()
+        end = time.time()
+    return start, end
 
 
 def query_travel(timeout: int = 5 * minute):
@@ -402,14 +406,14 @@ def workflow(times: int = 50, task_timeout: int = 5 * minute, module: int = 1):
         "order": query_order,
         "basic": query_basic,
         "user": query_user,
-        "travel_plan": query_travel_plan,
+        "travel-plan": query_travel_plan,
         "station": query_station,
     }
     p = Pool(4)
     # # 持续进行正常query
     # logger.info('start constant query')
     # p.apply_async(constant_query)
-
+    request_period_log = []
     for current in range(times):
         # 选择故障
         faults = select_fault(current, module)
@@ -424,7 +428,7 @@ def workflow(times: int = 50, task_timeout: int = 5 * minute, module: int = 1):
             fault_split = fault.split("-")
             target = fault_split[0]
             if fault_split[0] == "travel" and fault_split[1] == "plan":
-                target = "travel_plan"
+                target = "travel-plan"
             task = tasks[target]
             targets.append(target)
             task_list.append(task)
@@ -433,14 +437,18 @@ def workflow(times: int = 50, task_timeout: int = 5 * minute, module: int = 1):
             logger.info(f'fault inject: {fault}')
             apply(chaos_path[fault])
         time.sleep(10)
-        # 异常
-        for task in task_list:
-            logger.info(f'execute task: {task.__name__}')
-            p.apply_async(task, args=(task_timeout,))
         # 正常
         p.apply_async(constant_query, args=(targets, task_timeout))
+        # 异常
+        start = time.time()
+        for index, task in enumerate(task_list):
+            logger.info(f'execute task: {task.__name__}')
+            start_time, end_time = p.apply(task, args=(task_timeout / len(task_list),))
+            name = "ts-" + targets[index] + "-service"
+            request_period_log.append(([name], start_time, end_time))
         # 恢复故障
-        time.sleep(5 * minute)
+        while time.time() - start < task_timeout:
+            time.sleep(10)
         for fault in faults:
             logger.info(f'fault recover: {fault}')
             delete(chaos_path[fault])
@@ -450,6 +458,7 @@ def workflow(times: int = 50, task_timeout: int = 5 * minute, module: int = 1):
     p.close()
     logger.info('waiting for constant query end...')
     p.join()
+    logger.info(f'request_period_log: {request_period_log}')
     return
 
 
