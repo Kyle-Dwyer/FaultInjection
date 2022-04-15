@@ -24,7 +24,7 @@ hour = 60 * minute
 fun_dic = {}
 
 
-def constant_query(target: str, timeout: int = 24 * hour):
+def constant_query(targets: list, timeout: int = 24 * hour):
     q = Query(url)
 
     def preserve_scenario():
@@ -107,9 +107,10 @@ def constant_query(target: str, timeout: int = 24 * hour):
                     q.query_other_orders],
 
     }
-
-    for fun in forbid_query[target]:
-        del query_weights[fun]
+    for target in targets:
+        for fun in forbid_query[target]:
+            if fun in query_weights:
+                del query_weights[fun]
 
     for _ in range(0, count):
         func = random_from_weighted(query_weights)
@@ -362,7 +363,7 @@ def delete(file_path):
     os.system(command)
 
 
-def select_fault(idx: int) -> str:
+def select_fault(idx: int, module: int = 1) -> list:
     # All fault
     fault = [
         # 0-7
@@ -377,12 +378,22 @@ def select_fault(idx: int) -> str:
     random_fault = [10, 5, 13, 21, 11, 16, 4, 23, 1, 9, 17, 8, 18, 7, 19, 12, 6, 22, 15, 0, 20, 3, 14, 2,
                     21, 10, 16, 5, 23, 4, 13, 1, 11, 7, 9, 6, 17, 8, 0, 18, 3, 12, 19, 2, 22, 15, 20, 14,
                     1, 21]
+    double_random_fault = [
+        [11, 14], [22, 20], [6, 15], [18, 23], [9, 10], [21, 4], [14, 11], [3, 2], [15, 9], [1, 0], [12, 22], [20, 13],
+        [13, 16], [2, 1], [10, 12], [16, 18], [4, 5], [8, 8], [5, 17], [23, 3], [0, 21], [19, 7], [7, 19], [17, 6],
+
+        [12, 13], [23, 4], [3, 12], [20, 5], [10, 9], [2, 23], [17, 3], [4, 8], [9, 2], [16, 20], [5, 1], [15, 21],
+        [6, 14], [13, 16], [7, 15], [14, 22], [21, 7], [11, 11], [0, 19], [19, 10], [1, 18], [22, 0], [8, 17], [18, 6],
+
+        [19, 7], [14, 6]]
     if idx < 0 or idx > 49:
-        return ""
-    return fault[random_fault[idx]]
+        return []
+    if module == 2:
+        return [fault[double_random_fault[idx][0]], fault[double_random_fault[idx][1]]]
+    return [fault[random_fault[idx]]]
 
 
-def workflow(times: int = 50, task_timeout: int = 5 * minute):
+def workflow(times: int = 50, task_timeout: int = 5 * minute, module: int = 1):
     # task for each query
     tasks = {
         "travel": query_travel,
@@ -401,30 +412,38 @@ def workflow(times: int = 50, task_timeout: int = 5 * minute):
 
     for current in range(times):
         # 选择故障
-        fault = select_fault(current)
-        if fault == "":
+        faults = select_fault(current, module)
+        if len(faults) == 0:
             logger.info("no task, waiting for 1 minute")
             time.sleep(1 * minute)
             continue
-        fault_split = fault.split("-")
         # 选择task
-        target = fault_split[0]
-        if fault_split[0] == "travel" and fault_split[1] == "plan":
-            target = "travel_plan"
-        task = tasks[target]
+        targets = []
+        task_list = []
+        for fault in faults:
+            fault_split = fault.split("-")
+            target = fault_split[0]
+            if fault_split[0] == "travel" and fault_split[1] == "plan":
+                target = "travel_plan"
+            task = tasks[target]
+            targets.append(target)
+            task_list.append(task)
         # 注入故障
-        logger.info(f'fault inject: {fault}')
-        apply(chaos_path[fault])
+        for fault in faults:
+            logger.info(f'fault inject: {fault}')
+            apply(chaos_path[fault])
         time.sleep(10)
         # 异常
-        logger.info(f'execute task: {task.__name__}')
-        p.apply_async(task, args=(task_timeout,))
+        for task in task_list:
+            logger.info(f'execute task: {task.__name__}')
+            p.apply_async(task, args=(task_timeout,))
         # 正常
-        p.apply_async(constant_query, args=(target, task_timeout))
+        p.apply_async(constant_query, args=(targets, task_timeout))
         # 恢复故障
         time.sleep(5 * minute)
-        logger.info(f'fault recover: {fault}')
-        delete(chaos_path[fault])
+        for fault in faults:
+            logger.info(f'fault recover: {fault}')
+            delete(chaos_path[fault])
         # 间隔3min
         time.sleep(3 * minute)
 
@@ -440,6 +459,8 @@ def arguments():
         '--duration', help='query constant duration (times)', default=50)
     parser.add_argument('--url', help='train ticket server url',
                         default='http://175.27.169.178:32677')
+    parser.add_argument('--module', help='single or double',
+                        default=1)
     return parser.parse_args()
 
 
@@ -449,9 +470,9 @@ def main():
     url = args.url
     duration = int(args.duration)
     logger.info(f'start auto-query manager for {duration} times')
-
+    module = int(args.module)
     logger.info('start query workflow')
-    workflow(duration)
+    workflow(times=duration, module=module)
     logger.info('workflow ended')
     logger.info('auto-query manager ended')
     logger.info(f'execute_func_dict: {fun_dic}')
