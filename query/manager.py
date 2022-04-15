@@ -161,7 +161,7 @@ def run(task: Callable, timeout: int):
             break
         task()
         end = time.time()
-    return start, end
+    return start, end, fun_dic
 
 
 def query_travel(timeout: int = 5 * minute):
@@ -435,9 +435,10 @@ def workflow(times: int = 50, task_timeout: int = 5 * minute, module: int = 1):
         start = time.time()
         for index, task in enumerate(task_list):
             logger.info(f'execute task: {task.__name__}')
-            start_time, end_time = p.apply(task, args=(task_timeout / len(task_list),))
+            start_time, end_time, temp_dic = p.apply(task, args=(task_timeout / len(task_list),))
             name = "ts-" + targets[index] + "-service"
             request_period_log.append(([name], start_time, end_time))
+            fun_dic.update(temp_dic)
         # 恢复故障
         while time.time() - start < task_timeout:
             time.sleep(10)
