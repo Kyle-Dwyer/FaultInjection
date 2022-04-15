@@ -333,23 +333,23 @@ chaos_path = {'basic-network-delay': '../chaos/network_delay/basic_network_delay
               'travel-plan-network-delay': '../chaos/network_delay/travel_plan_network_delay.yml',
               'user-network-delay': '../chaos/network_delay/user_network_delay.yml',
 
-              'basic-cpu-stress': '../chaos/cpu_stress/basic_network_delay.yml',
-              'order-cpu-stress': '../chaos/cpu_stress/order_network_delay.yml',
-              'route-cpu-stress': '../chaos/cpu_stress/route_network_delay.yml',
-              'station-cpu-stress': '../chaos/cpu_stress/station_network_delay.yml',
-              'ticketinfo-cpu-stress': '../chaos/cpu_stress/ticketinfo_network_delay.yml',
-              'travel-cpu-stress': '../chaos/cpu_stress/travel_network_delay.yml',
-              'travel-plan-cpu-stress': '../chaos/cpu_stress/travel_plan_network_delay.yml',
-              'user-cpu-stress': '../chaos/cpu_stress/user_network_delay.yml',
+              'basic-cpu-stress': '../chaos/cpu_stress/basic_stress_cpu.yml',
+              'order-cpu-stress': '../chaos/cpu_stress/order_stress_cpu.yml',
+              'route-cpu-stress': '../chaos/cpu_stress/route_stress_cpu.yml',
+              'station-cpu-stress': '../chaos/cpu_stress/station_stress_cpu.yml',
+              'ticketinfo-cpu-stress': '../chaos/cpu_stress/ticketinfo_stress_cpu.yml',
+              'travel-cpu-stress': '../chaos/cpu_stress/travel_stress_cpu.yml',
+              'travel-plan-cpu-stress': '../chaos/cpu_stress/travel_plan_stress_cpu.yml',
+              'user-cpu-stress': '../chaos/cpu_stress/user_stress_cpu.yml',
 
-              'basic-http-outbound': '../chaos/http_outbound/basic_network_delay.yml',
-              'order-http-outbound': '../chaos/http_outbound/order_network_delay.yml',
-              'route-http-outbound': '../chaos/http_outbound/route_network_delay.yml',
-              'station-http-outbound': '../chaos/http_outbound/station_network_delay.yml',
-              'ticketinfo-http-outbound': '../chaos/http_outbound/ticketinfo_network_delay.yml',
-              'travel-http-outbound': '../chaos/http_outbound/travel_network_delay.yml',
-              'travel-plan-http-outbound': '../chaos/http_outbound/travel_plan_network_delay.yml',
-              'user-http-outbound': '../chaos/http_outbound/user_network_delay.yml'}
+              'basic-http-outbound': '../chaos/http_outbound/basic_http_outbound.yml',
+              'order-http-outbound': '../chaos/http_outbound/order_http_outbound.yml',
+              'route-http-outbound': '../chaos/http_outbound/route_http_outbound.yml',
+              'station-http-outbound': '../chaos/http_outbound/station_http_outbound.yml',
+              'ticketinfo-http-outbound': '../chaos/http_outbound/ticketinfo_http_outbound.yml',
+              'travel-http-outbound': '../chaos/http_outbound/travel_http_outbound.yml',
+              'travel-plan-http-outbound': '../chaos/http_outbound/travel_plan_http_outbound.yml',
+              'user-http-outbound': '../chaos/http_outbound/user_http_outbound.yml'}
 
 
 def apply(file_path):
@@ -415,6 +415,7 @@ def workflow(times: int = 50, task_timeout: int = 5 * minute):
         # 注入故障
         logger.info(f'fault inject: {fault}')
         apply(chaos_path[fault])
+        time.sleep(10)
         # 异常
         logger.info(f'execute task: {task.__name__}')
         p.apply_async(task, args=(task_timeout,))
